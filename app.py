@@ -4,6 +4,7 @@ import os
 import logging
 import random
 import re
+from threading import Lock
 
 # Configure logging
 logging.basicConfig(
@@ -18,6 +19,9 @@ app = Flask(__name__)
 TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 if not TOKEN:
     raise ValueError("No TELEGRAM_BOT_TOKEN environment variable set!")
+
+# Thread lock for sending messages
+send_lock = Lock()
 
 # Bert's personality responses
 GREETINGS = [
@@ -241,49 +245,59 @@ BERT_QA = {
     ]
 }
 
-def get_bert_response(text):
-    """Generate a contextual Bert-like response"""
-    text_lower = text.lower()
-    
-    # Handle greetings
-    if any(word in text_lower for word in ['hi', 'hello', 'hey', 'sup']):
-        return random.choice(GREETINGS)
-    
-    # Handle GM
-    elif 'gm' in text_lower:
-        return "GM! Let's get this bread! 🌅 Ready for another day of gains? 💪"
-    
-    # Handle mentions of Bert
-    elif 'bert' in text_lower:
-        return "That's me! Your favorite crypto birb! Always here to share some alpha! 🐦💎"
-    
-    # Check for specific question patterns
-    for pattern, responses in BERT_QA.items():
-        if re.search(pattern, text_lower):
-            return random.choice(responses)
-    
-    # Handle general questions
-    if '?' in text:
-        return "Great question fren! The answer is always: Buy $BERT! Not financial advice though! 😉"
-    
-    # Default responses
-    return random.choice(GENERIC_RESPONSES)
+# Compile regex patterns once
+PATTERNS = {key: re.compile(key, re.IGNORECASE) for key in BERT_QA.keys()}
 
-def send_message(chat_id, text):
-    """Send message using Telegram's HTTP API directly"""
+def send_message(chat_id, text, retry_count=1):
+    """Send message using Telegram's HTTP API directly with retries"""
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
     data = {
         "chat_id": chat_id,
         "text": text,
         "parse_mode": "HTML"
     }
-    try:
-        response = requests.post(url, json=data, timeout=10)
-        response.raise_for_status()
-        return True
-    except Exception as e:
-        logger.error(f"Failed to send message: {e}")
-        return False
+    
+    with send_lock:
+        for attempt in range(retry_count + 1):
+            try:
+                response = requests.post(url, json=data, timeout=5)  # Reduced timeout
+                response.raise_for_status()
+                return True
+            except requests.exceptions.Timeout:
+                if attempt == retry_count:
+                    logger.error("Final timeout attempt failed")
+                    return False
+                logger.warning(f"Timeout attempt {attempt + 1}/{retry_count + 1}")
+            except Exception as e:
+                logger.error(f"Failed to send message: {e}")
+                return False
+    return False
+
+def get_bert_response(text):
+    """Generate a contextual Bert-like response"""
+    text_lower = text.lower()
+    
+    # Quick checks first
+    if any(word in text_lower for word in ['hi', 'hello', 'hey', 'sup']):
+        return random.choice(GREETINGS)
+    
+    if 'gm' in text_lower:
+        return "GM! Let's get this bread! 🌅 Ready for another day of gains? 💪"
+    
+    if 'bert' in text_lower:
+        return "That's me! Your favorite crypto birb! Always here to share some alpha! 🐦💎"
+    
+    # Check patterns
+    for pattern, responses in PATTERNS.items():
+        if patterns.search(text_lower):
+            return random.choice(BERT_QA[pattern])
+    
+    # Question mark check
+    if '?' in text:
+        return "Great question fren! The answer is always: Buy $BERT! Not financial advice though! 😉"
+    
+    # Default response
+    return random.choice(GENERIC_RESPONSES)
 
 @app.route('/', methods=['GET'])
 def index():
@@ -296,17 +310,13 @@ def webhook():
         
         # Basic validation
         if not data or 'message' not in data:
-            logger.error("No message in update")
             return 'No message in update', 400
 
         chat_id = data['message'].get('chat', {}).get('id')
         text = data['message'].get('text', '')
 
         if not chat_id:
-            logger.error("No chat ID in message")
             return 'No chat ID in message', 400
-
-        logger.info(f"Received message: {text} from chat_id: {chat_id}")
 
         # Handle /start command
         if text == '/start':
@@ -318,12 +328,10 @@ def webhook():
         else:
             response_text = get_bert_response(text)
 
-        # Send response
-        if send_message(chat_id, response_text):
-            logger.info(f"Successfully sent response to chat_id: {chat_id}")
+        # Send response with retry
+        if send_message(chat_id, response_text, retry_count=2):
             return 'OK', 200
         else:
-            logger.error(f"Failed to send response to chat_id: {chat_id}")
             return 'Failed to send message', 500
 
     except Exception as e:

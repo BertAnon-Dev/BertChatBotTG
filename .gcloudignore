@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env
+__pycache__/
+*.pyc
+venv/
+deploy.sh
+deploy_aws.py
+setup_webhook.py
+thebertcoin_bot.py
+Dockerfile
+Procfile
+railway.json 
