@@ -3,7 +3,7 @@ from telegram import Bot, Update
 import os
 import asyncio
 import logging
-from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 # Configure logging
 logging.basicConfig(
@@ -19,35 +19,24 @@ TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 if not TOKEN:
     raise ValueError("No TELEGRAM_BOT_TOKEN environment variable set!")
 
-# Initialize bot with a larger connection pool
+# Initialize bot
 bot = Bot(token=TOKEN)
-executor = ThreadPoolExecutor(max_workers=4)
 
-async def send_message(chat_id: int, text: str):
-    """Helper function to send messages with proper error handling"""
+# Create a new event loop for the application
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+
+async def send_telegram_message(chat_id: int, text: str) -> None:
+    """Send a message to Telegram with proper error handling"""
     try:
         await bot.send_message(chat_id=chat_id, text=text)
     except Exception as e:
         logger.error(f"Error sending message: {e}")
+        raise
 
-async def handle_update(update: Update):
-    """Process a single update"""
-    if not update.message:
-        return
-    
-    chat_id = update.message.chat_id
-    
-    if update.message.text:
-        if update.message.text.startswith('/start'):
-            await send_message(
-                chat_id,
-                "Hello! I'm BertCoin Bot. 👋\n\n"
-                "I'm running on a free service that may take a few seconds to wake up if I've been inactive.\n"
-                "Once I'm awake, I'll respond instantly! 🚀"
-            )
-        else:
-            # Echo the message back
-            await send_message(chat_id, f"You said: {update.message.text}")
+def run_async(coro):
+    """Run an async function in the event loop"""
+    return asyncio.run_coroutine_threadsafe(coro, loop)
 
 @app.route('/', methods=['GET'])
 def index():
@@ -57,25 +46,42 @@ def index():
 def webhook():
     if request.method == 'POST':
         try:
-            # Parse the update
-            update = Update.de_json(request.get_json(), bot)
+            data = request.get_json()
             
-            # Create a new event loop for this request
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            
-            # Process the update
-            loop.run_until_complete(handle_update(update))
-            
-            # Clean up
-            loop.close()
+            # Basic validation
+            if not data:
+                return 'No data received', 400
+
+            chat_id = data.get('message', {}).get('chat', {}).get('id')
+            text = data.get('message', {}).get('text')
+
+            if not chat_id:
+                return 'No chat ID found', 400
+
+            # Handle /start command
+            if text == '/start':
+                response_text = (
+                    "Hello! I'm BertCoin Bot. 👋\n\n"
+                    "I'm running on a free service that may take a few seconds to wake up if I've been inactive.\n"
+                    "Once I'm awake, I'll respond instantly! 🚀"
+                )
+            else:
+                response_text = f"You said: {text}"
+
+            # Send response
+            future = run_async(send_telegram_message(chat_id, response_text))
+            future.result(timeout=10)  # Wait for the response with a timeout
             
             return 'OK'
         except Exception as e:
-            logger.error(f"Error processing update: {e}")
-            return 'Error processing update', 500
+            logger.error(f"Error in webhook: {e}")
+            return 'Error processing message', 500
     
     return 'Only POST requests are accepted'
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080))) 
+    try:
+        port = int(os.environ.get('PORT', 8080))
+        app.run(host='0.0.0.0', port=port)
+    finally:
+        loop.close() 
