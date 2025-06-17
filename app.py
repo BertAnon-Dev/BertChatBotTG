@@ -1,7 +1,8 @@
 from flask import Flask, request
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram import Bot, Update
+from telegram.ext import CommandHandler, MessageHandler, filters
 import os
+import asyncio
 
 app = Flask(__name__)
 
@@ -10,32 +11,23 @@ TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 if not TOKEN:
     raise ValueError("No TELEGRAM_BOT_TOKEN environment variable set!")
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# Initialize bot
+bot = Bot(token=TOKEN)
+
+async def start_command(update: Update):
+    """Handle /start command"""
     await update.message.reply_text(
         "Hello! I'm BertCoin Bot. 👋\n\n"
         "I'm running on a free service that may take a few seconds to wake up if I've been inactive.\n"
         "Once I'm awake, I'll respond instantly! 🚀"
     )
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_message(update: Update):
+    """Handle regular messages"""
     message = update.message.text
     # Add your existing message handling logic here
     response = f"You said: {message}"
     await update.message.reply_text(response)
-
-async def process_update(update_dict):
-    """Process the update using the bot's dispatcher."""
-    async_app = Application.builder().token(TOKEN).build()
-    
-    # Add handlers
-    async_app.add_handler(CommandHandler("start", start))
-    async_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    
-    # Create an Update object
-    update = Update.de_json(update_dict, async_app.bot)
-    
-    # Process the update
-    await async_app.process_update(update)
 
 @app.route('/', methods=['GET'])
 def index():
@@ -44,26 +36,25 @@ def index():
 @app.route('/webhook', methods=['POST'])
 def webhook():
     if request.method == 'POST':
-        import asyncio
-        update = request.get_json()
-        
-        # If this is the first message after spin-up, send a quick acknowledgment
         try:
-            if update.get('message', {}).get('text') and not update.get('edited_message'):
-                asyncio.run(process_update({
-                    'message': {
-                        'message_id': update['message']['message_id'],
-                        'chat': update['message']['chat'],
-                        'text': '⚡ Waking up... I'll respond in a moment!',
-                        'date': update['message']['date']
-                    }
-                }))
-        except Exception:
-            pass  # Don't let the acknowledgment interfere with main processing
-        
-        # Process the actual message
-        asyncio.run(process_update(update))
-        return 'OK'
+            update = Update.de_json(request.get_json(), bot)
+            
+            async def process_update():
+                if update.message is None:
+                    return
+                
+                if update.message.text:
+                    if update.message.text.startswith('/start'):
+                        await start_command(update)
+                    else:
+                        await handle_message(update)
+            
+            asyncio.run(process_update())
+            return 'OK'
+        except Exception as e:
+            print(f"Error processing update: {e}")
+            return 'Error processing update', 500
+            
     return 'Only POST requests are accepted'
 
 if __name__ == '__main__':
