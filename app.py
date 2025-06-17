@@ -5,11 +5,17 @@ import os
 
 app = Flask(__name__)
 
-# Your existing bot token
-TOKEN = "7892756309:AAGxdSbwPc6jhNU65srmldWGQe2gR58izSg"
+# Get bot token from environment variable
+TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+if not TOKEN:
+    raise ValueError("No TELEGRAM_BOT_TOKEN environment variable set!")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Hello! I'm BertCoin Bot. How can I help you today?")
+    await update.message.reply_text(
+        "Hello! I'm BertCoin Bot. 👋\n\n"
+        "I'm running on a free service that may take a few seconds to wake up if I've been inactive.\n"
+        "Once I'm awake, I'll respond instantly! 🚀"
+    )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.message.text
@@ -33,13 +39,29 @@ async def process_update(update_dict):
 
 @app.route('/', methods=['GET'])
 def index():
-    return 'Bot is running'
+    return 'Bot is running! This free instance may take ~30s to wake up after inactivity.'
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     if request.method == 'POST':
         import asyncio
         update = request.get_json()
+        
+        # If this is the first message after spin-up, send a quick acknowledgment
+        try:
+            if update.get('message', {}).get('text') and not update.get('edited_message'):
+                asyncio.run(process_update({
+                    'message': {
+                        'message_id': update['message']['message_id'],
+                        'chat': update['message']['chat'],
+                        'text': '⚡ Waking up... I'll respond in a moment!',
+                        'date': update['message']['date']
+                    }
+                }))
+        except Exception:
+            pass  # Don't let the acknowledgment interfere with main processing
+        
+        # Process the actual message
         asyncio.run(process_update(update))
         return 'OK'
     return 'Only POST requests are accepted'
