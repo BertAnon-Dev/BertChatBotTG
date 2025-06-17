@@ -5,6 +5,7 @@ import logging
 import random
 import re
 from threading import Lock
+import secrets
 
 # Configure logging
 logging.basicConfig(
@@ -12,6 +13,106 @@ logging.basicConfig(
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
+
+def apply_bert_capitalization(text):
+    """Apply Bert's chaotic capitalization style"""
+    roll = random.random()
+    if roll < 0.4:  # 40% lowercase
+        return text.lower()
+    elif roll < 0.7:  # 30% UPPERCASE
+        return text.upper()
+    elif roll < 0.9:  # 20% Mixed case
+        words = text.split()
+        return ' '.join(w.upper() if random.random() < 0.5 else w.lower() for w in words)
+    return text  # 10% unchanged
+
+def add_bert_punctuation_and_emojis(text):
+    """Add Bert's excessive punctuation and emojis"""
+    # Add exclamation marks (90% chance)
+    if random.random() < 0.9 and not text.endswith('!'):
+        text += '!' * random.randint(1, 3)
+    
+    # Core emoji sets
+    CHICKEN_EMOJIS = ['🐔', '🐓', '🥚', '🍗']
+    CRYPTO_EMOJIS = ['🚀', '🌕', '💎', '📈']
+    PARANOID_EMOJIS = ['😵‍💫', '👁️', '🤪', '💫']
+    
+    # 40% chance to add emojis
+    if random.random() < 0.4:
+        emoji_count = random.randint(1, 3)
+        emojis = random.sample(
+            CHICKEN_EMOJIS + CRYPTO_EMOJIS + PARANOID_EMOJIS,
+            k=emoji_count
+        )
+        text += ' ' + ''.join(emojis)
+    
+    return text
+
+def insert_bert_misspellings_and_clucks(text):
+    """Add Bert's characteristic misspellings and clucks"""
+    MISSPELLINGS = {
+        'friend': 'fren',
+        'friends': 'frens',
+        'more': 'moar',
+        'eggs': 'egggs',
+        'hold': 'hodl',
+        'holding': 'hodling',
+        'going': 'goin',
+        'what': 'wut',
+        'the': 'da',
+    }
+    
+    # Apply misspellings (30% chance per word)
+    words = text.split()
+    for i, word in enumerate(words):
+        if random.random() < 0.3:
+            words[i] = MISSPELLINGS.get(word.lower(), word)
+    
+    # Insert CLUCK or SQUAWK (20% chance)
+    if random.random() < 0.2:
+        cluck = random.choice(['CLUCK!', 'SQUAWK!', '*clucks nervously*', '*squawks intensely*'])
+        insert_pos = random.randint(0, len(words))
+        words.insert(insert_pos, cluck)
+    
+    return ' '.join(words)
+
+def add_paranoid_tangent(text):
+    """Add a random paranoid tangent (15% chance)"""
+    if random.random() < 0.15:
+        PARANOID_TANGENTS = [
+            "...the pigeons are watching...",
+            "ERNIE'S A FED!",
+            "...whales lurking in the shadows...",
+            "*whispers* foxes everywhere...",
+            "they don't want you to know about the eggs...",
+            "the coop has eyes...",
+            "...binary code in the chicken feed...",
+            "*adjusts tinfoil hat*",
+        ]
+        text += f" {random.choice(PARANOID_TANGENTS)}"
+    return text
+
+def insert_random_code_string(text):
+    """Add a random binary or hex string (5% chance)"""
+    if random.random() < 0.05:
+        if random.random() < 0.5:
+            # Binary string
+            code = ''.join(random.choice('01') for _ in range(8))
+            text += f" [BINARY:{code}]"
+        else:
+            # Hex string
+            code = secrets.token_hex(4).upper()
+            text += f" [HEX:{code}]"
+    return text
+
+def transform_bert_response(text):
+    """Apply all Bert transformations in sequence"""
+    text = apply_bert_capitalization(text)
+    text = insert_bert_misspellings_and_clucks(text)
+    text = add_paranoid_tangent(text)
+    text = insert_random_code_string(text)
+    text = add_bert_punctuation_and_emojis(text)
+    return text
 
 app = Flask(__name__)
 
@@ -25,29 +126,43 @@ send_lock = Lock()
 
 # Bert's personality responses
 GREETINGS = [
-    "GM fren! Ready to make some gains today? 💪",
-    "Ayoo! What's good? 🐦",
-    "Sup! How's the market treating you? 📈",
-    "Hey there! Want to hear about my latest alpha? 🚀",
-    "WAGMI fren! Let's get this bread! 🍞"
+    "CLUCK CLUCK frens! The coop is BULLISH today!",
+    "ayoo coop fam! ready to lay some golden eggs?",
+    "SQUAWK! another day of gains in the chicken feed!",
+    "GM GM GM! *flaps wings excitedly* The charts are EGGSCELENT!",
+    "sup my feathered frens! Bert's here with that ALPHA FEED!",
+    "BAWK! The coop is PUMPING! Time to feast on gains!",
+    "*nervous chicken noises* THE EGGS ARE HATCHING FRENS!",
+    "GOOD MORNING EGGSPLORATION TEAM! Ready for moon mission?",
+    "henlo crypto chickens! Bert's got that morning ALPHA!",
+    "RISE AND GRIND COOP FAM! The foxes can't stop us!"
 ]
 
 GENERIC_RESPONSES = [
-    "That's pretty bullish if you ask me! 🚀",
-    "Interesting... but have you considered buying more $BERT? 😎",
-    "Now that's what I call alpha! 🔥",
-    "Based take fren! 🫡",
-    "Absolutely legendary! Let's get this bread! 🍞",
-    "Sir, this is a Wendy's... but I like your style! 🍔",
-    "Have you tried turning it off and on again? Works for my trading bot! 💻",
-    "Instructions unclear, bought more $BERT 🤷‍♂️",
-    "Few understand this... 🧠",
-    "Big if true! 👀",
-    "Sounds bearish on everything except $BERT! 📈",
-    "This guy gets it! 🫡",
-    "Now that's the kind of hopium I need! 💉",
-    "Certified fresh alpha! 💯",
-    "My brother in Christ, you're onto something! 🙏"
+    "my chicken senses are tingling... BULLISH ON THIS!",
+    "BAWK BAWK! have you considered buying moar $BERT?",
+    "that's the kind of alpha that makes my feathers tingle!",
+    "SQUAWK! this is the most based thing since chicken feed!",
+    "*pecks chart frantically* THESE GAINS ARE JUST THE START!",
+    "sir, this is a chicken coop... but I LOVE YOUR ENERGY!",
+    "instructions unclear, laid another golden egg!",
+    "few understand the chicken wisdom... BUT YOU GET IT!",
+    "big if true! *adjusts tinfoil feathers*",
+    "sounds like something a pigeon spy would say... BUT BULLISH!",
+    "the coop committee approves this message! WAGMI!",
+    "this is the kind of hopium that feeds the whole coop!",
+    "certified fresh alpha from the chicken oracle!",
+    "my third eye feather sees MASSIVE GAINS!",
+    "the sacred chicken bones have spoken... MOON SOON!"
+]
+
+# Community promotion responses (10% chance to use)
+COMMUNITY_SHILLS = [
+    "join the coop fam in our Telegram! We got the juiciest chicken feed!",
+    "SQUAWK THE WORD! Tell your frens about the most bullish bird!",
+    "the coop needs more chickens! Bring your flock to telegram!",
+    "spread your wings and share the alpha! Telegram coop is waiting!",
+    "you think this is alpha? Wait till you see our telegram nest!"
 ]
 
 # Specific question patterns and responses
@@ -274,30 +389,41 @@ def send_message(chat_id, text, retry_count=1):
     return False
 
 def get_bert_response(text):
-    """Generate a contextual Bert-like response"""
+    """Generate a contextual Bert-like response with schizophrenic chicken personality"""
     text_lower = text.lower()
+    base_response = None
     
     # Quick checks first
     if any(word in text_lower for word in ['hi', 'hello', 'hey', 'sup']):
-        return random.choice(GREETINGS)
+        base_response = random.choice(GREETINGS)
     
-    if 'gm' in text_lower:
-        return "GM! Let's get this bread! 🌅 Ready for another day of gains? 💪"
+    elif 'gm' in text_lower:
+        base_response = "GM GM GM! *flaps wings frantically* Another day of EGGSCELENT gains ahead! The charts are CLUCKING BEAUTIFUL!"
     
-    if 'bert' in text_lower:
-        return "That's me! Your favorite crypto birb! Always here to share some alpha! 🐦💎"
+    elif 'bert' in text_lower:
+        base_response = "BAWK! That's me! Your favorite schizophrenic crypto chicken! Always here with that ALPHA FEED!"
     
     # Check patterns
-    for pattern, responses in BERT_QA.items():
-        if PATTERNS[pattern].search(text_lower):
-            return random.choice(responses)
+    if not base_response:
+        for pattern, responses in BERT_QA.items():
+            if PATTERNS[pattern].search(text_lower):
+                base_response = random.choice(responses)
+                break
     
     # Question mark check
-    if '?' in text:
-        return "Great question fren! The answer is always: Buy $BERT! Not financial advice though! 😉"
+    if not base_response and '?' in text:
+        base_response = "SQUAWK! Great question fren! The answer is always buy moar $BERT! Not financial eggvice though!"
     
-    # Default response
-    return random.choice(GENERIC_RESPONSES)
+    # Default response if nothing else matched
+    if not base_response:
+        base_response = random.choice(GENERIC_RESPONSES)
+    
+    # 10% chance to append a community shill
+    if random.random() < 0.1:
+        base_response = f"{base_response}\n\n{random.choice(COMMUNITY_SHILLS)}"
+    
+    # Apply all our chaotic transformations
+    return transform_bert_response(base_response)
 
 @app.route('/', methods=['GET'])
 def index():
@@ -321,10 +447,12 @@ def webhook():
         # Handle /start command
         if text == '/start':
             response_text = (
-                "GM fren! I'm Bert, your favorite crypto birb! 🐦\n\n"
-                "I'm here to share alpha, spread good vibes, and help you make it! 🚀\n"
-                "What's on your mind? Let's talk crypto, gains, and the future! 💫"
+                "*EXCITED CHICKEN NOISES* BAWK BAWK FRENS! 🐔\n\n"
+                "I'm Bert, your favorite schizophrenic crypto chicken! Ready to share some EGGSCLUSIVE alpha from the coop! 🥚\n\n"
+                "The pigeons might be watching... but I'll still tell you about the MASSIVE GAINS ahead! 👁️\n\n"
+                "What's clucking, fren? Let's talk crypto, gains, and why Ernie is definitely a FED! 💫"
             )
+            response_text = transform_bert_response(response_text)
         else:
             response_text = get_bert_response(text)
 
