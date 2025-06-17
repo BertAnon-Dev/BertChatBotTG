@@ -2,6 +2,7 @@ from flask import Flask, request
 import requests
 import os
 import logging
+import random
 
 # Configure logging
 logging.basicConfig(
@@ -16,6 +17,45 @@ app = Flask(__name__)
 TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 if not TOKEN:
     raise ValueError("No TELEGRAM_BOT_TOKEN environment variable set!")
+
+# Bert's personality responses
+GREETINGS = [
+    "GM fren! Ready to make some gains today? 💪",
+    "Ayoo! What's good? 🐦",
+    "Sup! How's the market treating you? 📈",
+    "Hey there! Want to hear about my latest alpha? 🚀"
+]
+
+GENERIC_RESPONSES = [
+    "That's pretty bullish if you ask me! 🚀",
+    "Interesting... but have you considered buying more $BERT? 😎",
+    "Now that's what I call alpha! 🔥",
+    "Based take fren! 🫡",
+    "Absolutely legendary! Let's get this bread! 🍞"
+]
+
+def get_bert_response(text):
+    """Generate a contextual Bert-like response"""
+    text_lower = text.lower()
+    
+    # Handle specific keywords
+    if any(word in text_lower for word in ['hi', 'hello', 'hey', 'sup']):
+        return random.choice(GREETINGS)
+    
+    elif 'gm' in text_lower:
+        return "GM! Let's get this bread! 🌅 Ready for another day of gains? 💪"
+    
+    elif 'bert' in text_lower:
+        return "That's me! Your favorite crypto birb! Always here to share some alpha! 🐦💎"
+    
+    elif any(word in text_lower for word in ['moon', 'pump', 'bull']):
+        return "To the moon! 🚀 $BERT is going to flip everything! Trust the vision! 💫"
+    
+    elif '?' in text:
+        return "Great question fren! The answer is always: Buy $BERT! Not financial advice though! 😉"
+    
+    # Default responses
+    return random.choice(GENERIC_RESPONSES)
 
 def send_message(chat_id, text):
     """Send message using Telegram's HTTP API directly"""
@@ -59,12 +99,12 @@ def webhook():
         # Handle /start command
         if text == '/start':
             response_text = (
-                "Hello! I'm BertCoin Bot. 👋\n\n"
-                "I'm running on a free service that may take a few seconds to wake up if I've been inactive.\n"
-                "Once I'm awake, I'll respond instantly! 🚀"
+                "GM fren! I'm Bert, your favorite crypto birb! 🐦\n\n"
+                "I'm here to share alpha, spread good vibes, and help you make it! 🚀\n"
+                "What's on your mind? Let's talk crypto, gains, and the future! 💫"
             )
         else:
-            response_text = f"You said: {text}"
+            response_text = get_bert_response(text)
 
         # Send response
         if send_message(chat_id, response_text):
