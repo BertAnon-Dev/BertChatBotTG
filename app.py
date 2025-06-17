@@ -288,9 +288,9 @@ def get_bert_response(text):
         return "That's me! Your favorite crypto birb! Always here to share some alpha! 🐦💎"
     
     # Check patterns
-    for pattern, responses in PATTERNS.items():
-        if patterns.search(text_lower):
-            return random.choice(BERT_QA[pattern])
+    for pattern, responses in BERT_QA.items():
+        if PATTERNS[pattern].search(text_lower):
+            return random.choice(responses)
     
     # Question mark check
     if '?' in text:
