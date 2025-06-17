@@ -389,41 +389,26 @@ def send_message(chat_id, text, retry_count=1):
     return False
 
 def get_bert_response(text):
-    """Generate a contextual Bert-like response with schizophrenic chicken personality"""
-    text_lower = text.lower()
-    base_response = None
-    
-    # Quick checks first
-    if any(word in text_lower for word in ['hi', 'hello', 'hey', 'sup']):
-        base_response = random.choice(GREETINGS)
-    
-    elif 'gm' in text_lower:
-        base_response = "GM GM GM! *flaps wings frantically* Another day of EGGSCELENT gains ahead! The charts are CLUCKING BEAUTIFUL!"
-    
-    elif 'bert' in text_lower:
-        base_response = "BAWK! That's me! Your favorite schizophrenic crypto chicken! Always here with that ALPHA FEED!"
-    
-    # Check patterns
-    if not base_response:
-        for pattern, responses in BERT_QA.items():
-            if PATTERNS[pattern].search(text_lower):
-                base_response = random.choice(responses)
-                break
-    
-    # Question mark check
-    if not base_response and '?' in text:
-        base_response = "SQUAWK! Great question fren! The answer is always buy moar $BERT! Not financial eggvice though!"
-    
-    # Default response if nothing else matched
-    if not base_response:
-        base_response = random.choice(GENERIC_RESPONSES)
-    
-    # 10% chance to append a community shill
-    if random.random() < 0.1:
-        base_response = f"{base_response}\n\n{random.choice(COMMUNITY_SHILLS)}"
-    
-    # Apply all our chaotic transformations
-    return transform_bert_response(base_response)
+    """Simple function that returns 'Bert' with random capitalization"""
+    capitalization_patterns = [
+        "Bert",
+        "bERT",
+        "BERt",
+        "beRT",
+        "BeRt",
+        "bErT",
+        "BErT",
+        "berT",
+        "BErT",
+        "bERt",
+        "BeRT",
+        "BERt",
+        "bErT",
+        "BeRt",
+        "berT",
+        "BErT"
+    ]
+    return random.choice(capitalization_patterns)
 
 @app.route('/', methods=['GET'])
 def index():
