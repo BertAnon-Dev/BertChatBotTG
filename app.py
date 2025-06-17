@@ -36,7 +36,14 @@ GENERIC_RESPONSES = [
     "Absolutely legendary! Let's get this bread! 🍞",
     "Sir, this is a Wendy's... but I like your style! 🍔",
     "Have you tried turning it off and on again? Works for my trading bot! 💻",
-    "Instructions unclear, bought more $BERT 🤷‍♂️"
+    "Instructions unclear, bought more $BERT 🤷‍♂️",
+    "Few understand this... 🧠",
+    "Big if true! 👀",
+    "Sounds bearish on everything except $BERT! 📈",
+    "This guy gets it! 🫡",
+    "Now that's the kind of hopium I need! 💉",
+    "Certified fresh alpha! 💯",
+    "My brother in Christ, you're onto something! 🙏"
 ]
 
 # Specific question patterns and responses
@@ -93,6 +100,144 @@ BERT_QA = {
         "WAGMI fren, believe! 🙏",
         "The only ones NGMI are the ones who don't believe in $BERT! 💫",
         "Turn that NGMI into WAGMI! Just buy more! 📈"
+    ],
+
+    r"wen.*lambo|lambo.*wen": [
+        "Lambo? Think bigger fren... we're getting a fleet! 🏎️",
+        "Forget Lambo, we're getting a golden chicken-mobile! 🐔",
+        "Already ordered mine in $BERT green! Just trust the process! 💚"
+    ],
+
+    r"cope|copium": [
+        "It's not cope if you're right! *taps head* 🧠",
+        "The only thing I'm coping with is all these gains! 📈",
+        "Cope? More like hope! And hope is all we need! 🙏"
+    ],
+
+    r"fud|fuder": [
+        "FUD = Fear, Uncertainty, and Delusion about not buying more $BERT! 🎯",
+        "The only FUD I know is Fully Undervalued Deal! 💰",
+        "Imagine FUDing the comfiest hold in crypto! NGMl! 😤"
+    ],
+
+    r"wen.*listing|listing.*wen": [
+        "Soon™ fren! The exchanges are literally begging us! 📱",
+        "Binance CEO is in my DMs right now! Trust! 💫",
+        "We're too based for CEX... but maybe just one 😏"
+    ],
+
+    r"hodl|hold": [
+        "HODL? More like BODL (Buy Only Don't Leave)! 💎🙌",
+        "My grip stronger than my morning coffee! ☕",
+        "Been hodling since the egg days! 🥚"
+    ],
+
+    r"dip|buying": [
+        "What dip? I only see discount opportunities! 🛍️",
+        "Buy the dip, then buy the rip! This is financial advice! (jk) 📈",
+        "Imagine not buying this gift from the crypto gods! 🎁"
+    ],
+
+    r"gas|fees": [
+        "Gas fees too high? Just be rich! 🤑",
+        "Think of it as a VIP entry fee to the gains club! 💫",
+        "Gas is temporary, gains are forever! ⛽"
+    ],
+
+    r"wen.*binance|binance.*wen": [
+        "CZ just needs to stop being ngmi and list us already! 📊",
+        "Binance? You mean that small CEX that hasn't listed $BERT yet? 😏",
+        "Forget Binance, we're getting listed on NASA! 🚀"
+    ],
+
+    r"bear.*market|market.*bear": [
+        "Bears are just bulls in denial! 🐻➡️🐂",
+        "The only bear I know is Build, Evolve, Accumulate, Rise! 📈",
+        "Bear market is just a social construct! Stay bullish! 💪"
+    ],
+
+    r"wagmi|we.*gonna.*make.*it": [
+        "WAGMI? More like WEGMI (We're Extremely Gonna Make It)! 🚀",
+        "The WAGMIest of WAGMIs! Few understand! 💫",
+        "WAGMI but some more than others (hint: $BERT holders)! 😉"
+    ],
+
+    r"ser|sir": [
+        "Yes ser! 🫡",
+        "Ser, this is a Bertcoin! 🐦",
+        "The seriest ser that ever ser'd! 🎩"
+    ],
+
+    r"ath|all.*time.*high": [
+        "You mean all time low? Because we're just getting started! 📈",
+        "Every second is ATH in my heart! 💚",
+        "ATH? Oh, you mean that thing we break daily? 💪"
+    ],
+
+    r"roadmap|plans": [
+        "Step 1: Buy $BERT\nStep 2: ???\nStep 3: Yacht! 🛥️",
+        "The roadmap is simple: up only! 📈",
+        "We're going wherever the alpha takes us fren! 🗺️"
+    ],
+
+    r"whitepaper|white.*paper": [
+        "Whitepaper? More like rightpaper! It's just '$BERT = number go up'! 📄",
+        "We wrote it in green ink because we're eco-friendly! 💚",
+        "The real whitepaper is the friends we made along the way! 🤝"
+    ],
+
+    r"dev|developer": [
+        "Devs doing dev things! Very busy! Much wow! 👨‍💻",
+        "The code is poetry, and we're Shakespeare! ✍️",
+        "Dev team = Best team! Trust the process! 💻"
+    ],
+
+    r"airdrop|drop": [
+        "The only thing dropping is your chance to buy this low! 📉",
+        "Airdrop? You mean the $BERT falling from heaven? 🪂",
+        "Imagine needing airdrops when you have $BERT! 🎯"
+    ],
+
+    r"nft|jpeg": [
+        "Right click save that! But you can't right click save these gains! 🖼️",
+        "NFTs are cool, but have you tried $BERT? 🎨",
+        "Every $BERT holder is an NFT - Non Fungible Trader! 😎"
+    ],
+
+    r"pump.*it|dump.*it": [
+        "He bought? Pamp it! 📞",
+        "Bogdanoff would be proud! 🪦",
+        "The pump is eternal, the dump is internal! 📈"
+    ],
+
+    r"based": [
+        "Based? More like BERT-pilled! 💊",
+        "The basedest of based takes! 🎯",
+        "So based even the pH scale can't measure it! 🧪"
+    ],
+
+    r"alpha": [
+        "The alpha is in the air... and it smells like chicken tendies! 🍗",
+        "Alpha so good you can taste it! 😋",
+        "Real alpha is buying whatever I buy! (NFA) 📈"
+    ],
+
+    r"bot|robot": [
+        "Beep boop... I mean, chirp chirp! 🤖🐦",
+        "I'm not a bot, I'm just bullish 24/7! 💫",
+        "The only bot here is your trading strategy! 😎"
+    ],
+
+    r"wife|girlfriend": [
+        "Relationships are temporary, $BERT is forever! 💕",
+        "Show her the charts, that'll fix everything! 📊",
+        "My girlfriend? Yeah she goes to another blockchain... 👀"
+    ],
+
+    r"rich|wealth": [
+        "Being rich is a state of mind... and also a state of $BERT! 💰",
+        "Wealth is measured in $BERT, few understand! 🧠",
+        "Why be rich when you can be $BERT rich? 🤑"
     ]
 }
 
